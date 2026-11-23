@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f7fb">
+  <title>HTTPS Certificate Validation and Website Security Checker</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Website security checker home">
+      <span class="brand-mark" aria-hidden="true">W</span>
+      <span>Web Security Checker</span>
+    </a>
+    <span class="project-label">College project</span>
+  </header>
+
+  <main class="page">
+    <section class="hero" aria-labelledby="page-title">
+      <p class="eyebrow">HTTPS configuration review</p>
+      <h1 id="page-title">Understand a website's security signals.</h1>
+      <p class="hero-copy">
+        Review certificate validation, the TLS connection, redirects, and selected
+        response headers in one readable report.
+      </p>
+    </section>
+
+    <section class="scan-panel" aria-labelledby="scan-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Start a scan</p>
+          <h2 id="scan-title">Enter a website URL</h2>
+        </div>
+        <span class="lock-mark" aria-hidden="true">TLS</span>
+      </div>
+      <form id="scan-form" class="scan-form">
+        <label for="website-url">Website address</label>
+        <div class="input-row">
+          <input
+            id="website-url"
+            name="url"
+            type="url"
+            inputmode="url"
+            autocomplete="url"
+            placeholder="https://www.example.com"
+            maxlength="2048"
+            required
+            aria-describedby="url-help"
+          >
+          <button id="scan-button" type="submit">
+            <span class="button-label">Scan website</span>
+            <span class="button-spinner" aria-hidden="true"></span>
+          </button>
+        </div>
+        <p id="url-help" class="field-help">
+          Enter a public website using an HTTP or HTTPS address.
+        </p>
+      </form>
+      <p id="loading-message" class="loading-message" role="status" hidden>
+        <span class="loading-spinner" aria-hidden="true"></span>
+        Checking the website. This may take a few seconds.
+      </p>
+      <div id="api-error" class="api-error" role="alert" hidden></div>
+    </section>
+
+    <section id="results" class="results" aria-labelledby="results-title" hidden>
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">Scan report</p>
+          <h2 id="results-title">Results</h2>
+          <p id="scanned-url" class="scanned-url"></p>
+        </div>
+        <div id="overall-status" class="overall-status" aria-live="polite"></div>
+      </div>
+
+      <section class="summary-card" aria-labelledby="summary-title">
+        <div class="summary-icon" aria-hidden="true">i</div>
+        <div>
+          <h3 id="summary-title">Overall summary</h3>
+          <p id="overall-summary"></p>
+        </div>
+      </section>
+
+      <div class="report-grid">
+        <section class="report-card certificate-card" aria-labelledby="certificate-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Identity and trust</p>
+              <h3 id="certificate-title">Certificate</h3>
+            </div>
+            <span class="card-icon" aria-hidden="true">01</span>
+          </div>
+          <dl id="certificate-details" class="details-list"></dl>
+          <div id="certificate-checks" class="check-list"></div>
+        </section>
+
+        <section class="report-card" aria-labelledby="tls-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Connection</p>
+              <h3 id="tls-title">Negotiated TLS</h3>
+            </div>
+            <span class="card-icon" aria-hidden="true">02</span>
+          </div>
+          <div id="tls-result" class="check-list"></div>
+          <dl id="tls-details" class="details-list tls-details"></dl>
+          <p class="note">
+            Protocol and cipher values describe this connection only; they are not
+            a complete inventory of server-supported configurations.
+          </p>
+        </section>
+
+        <section class="report-card" aria-labelledby="redirect-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Transport</p>
+              <h3 id="redirect-title">HTTP to HTTPS</h3>
+            </div>
+            <span class="card-icon" aria-hidden="true">03</span>
+          </div>
+          <div id="redirect-result" class="check-list"></div>
+          <p id="redirect-final-url" class="final-destination" hidden></p>
+          <p class="note">
+            This finding follows the server's HTTP redirect chain. It does not
+            emulate browser HSTS preload or cached HSTS upgrades.
+          </p>
+        </section>
+
+        <section class="report-card" aria-labelledby="headers-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow">Browser protections</p>
+              <h3 id="headers-title">Security headers</h3>
+            </div>
+            <span class="card-icon" aria-hidden="true">04</span>
+          </div>
+          <div id="header-results" class="check-list"></div>
+          <p class="note">
+            Header findings are separate from certificate validation. Missing
+            headers do not make a certificate invalid.
+          </p>
+        </section>
+      </div>
+
+      <section class="report-card recommendations-card" aria-labelledby="recommendations-title">
+        <div class="card-heading">
+          <div>
+            <p class="eyebrow">Next steps</p>
+            <h3 id="recommendations-title">Recommendations</h3>
+          </div>
+          <span class="card-icon" aria-hidden="true">05</span>
+        </div>
+        <ul id="recommendations-list" class="recommendations-list"></ul>
+      </section>
+
+      <p class="disclaimer">
+        A valid certificate does not prove that a website is legitimate or free
+        from phishing. This report checks selected technical signals and is not
+        a guarantee of overall website security.
+      </p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>HTTPS Certificate Validation and Website Security Checker</p>
+  </footer>
+</body>
+</html>
